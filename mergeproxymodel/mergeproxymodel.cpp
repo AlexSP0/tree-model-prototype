@@ -26,13 +26,11 @@ QModelIndex MergeProxyModel::index(int row, int column, const QModelIndex &paren
         const_cast<MergeProxyModel *>(this)->m_currentModel = model;
     }
 
-    return m_currentModel->index(row, column, parent);
+    //!!!
+    return m_currentModel->index(row, column, QModelIndex());
 }
 
-QModelIndex MergeProxyModel::parent(const QModelIndex &child) const
-{
-    return QModelIndex();
-}
+QModelIndex MergeProxyModel::parent(const QModelIndex &child) const {}
 
 int MergeProxyModel::rowCount(const QModelIndex &parent) const
 {
