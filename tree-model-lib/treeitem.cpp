@@ -2,6 +2,7 @@
 
 TreeItem::TreeItem(TreeItem *parent)
     : m_parent(parent)
+    , type(ItemType::simple)
 {}
 
 TreeItem::~TreeItem()
@@ -14,6 +15,8 @@ TreeItem::~TreeItem()
 
 bool TreeItem::appendChildToNextRow(TreeItem *item)
 {
+    item->m_parent = this;
+
     m_childsItems.append(QVector{item});
 
     return true;
@@ -25,6 +28,9 @@ bool TreeItem::appendItemExitingRow(TreeItem *item, int row)
     {
         return false;
     }
+
+    item->m_parent = this;
+
     auto &currentRow = m_childsItems[row];
     currentRow.append(item);
 
@@ -48,14 +54,16 @@ TreeItem *TreeItem::child(int row, int column)
 
 int TreeItem::childRowsCount() const
 {
-    return m_childsItems.count();
+    auto i = m_childsItems.count();
+    return i;
 }
 
 int TreeItem::columnsCountInRow(int row) const
 {
-    if (row > 0 && row < m_childsItems.size())
+    if (row >= 0 && row < m_childsItems.size())
     {
-        return (m_childsItems.at(row)).count();
+        auto i = (m_childsItems.at(row)).count();
+        return i;
     }
     return 0;
 }

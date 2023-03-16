@@ -4,20 +4,13 @@
 #include "../tree-model-lib/treemodel.h"
 #include <qabstractitemmodel.h>
 
-struct ConnectionPoint
-{
-    QAbstractItemModel *sourceModel = nullptr;
-    QModelIndex connectionIndex;
-    QAbstractItemModel *connectedModel = nullptr;
-};
-
 class MergeProxyModel : public QAbstractItemModel
 {
 public:
     Q_OBJECT
 
 public:
-    MergeProxyModel(QAbstractItemModel *rootModel);
+    MergeProxyModel(TreeModel *rootModel);
     ~MergeProxyModel();
 
     QVariant data(const QModelIndex &index, int role) const override;
@@ -34,16 +27,14 @@ public:
     QModelIndex mapFromSource(const QModelIndex &sourceIndex) const;
     QModelIndex mapToSource(const QModelIndex &proxyIndex) const;
 
+    void attachModel(QModelIndex from, QModelIndex to);
+
+    QModelIndex getFirst();
+
 private:
-    QAbstractItemModel *m_rootModel;
-    QAbstractItemModel *m_currentModel;
+    TreeModel *m_rootModel;
 
-    QList<QAbstractItemModel *> m_sourcesModels;
-    QList<ConnectionPoint> m_connectionPoints;
-
-    QAbstractItemModel *isAnyConnectionByIndex(int row,
-                                               int column,
-                                               QAbstractItemModel *sModel) const;
+    QList<TreeModel *> m_sourcesModels;
 };
 
 #endif

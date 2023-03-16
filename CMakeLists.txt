@@ -21,5 +21,6 @@ add_executable(tree-model-prototype
 )
 target_link_libraries(tree-model-prototype PRIVATE Qt5::Core)
 target_link_libraries(tree-model-prototype PRIVATE tree-model-lib)
+target_link_libraries(tree-model-prototype PRIVATE mergeproxymodel-lib)
 install(TARGETS tree-model-prototype
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})

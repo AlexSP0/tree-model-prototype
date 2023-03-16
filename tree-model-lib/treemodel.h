@@ -5,7 +5,9 @@
 
 #include "treeitem.h"
 
-class TreeModel : QAbstractItemModel
+class TreeItem;
+
+class TreeModel : public QAbstractItemModel
 {
 public:
     Q_OBJECT
@@ -25,7 +27,15 @@ public:
 
     int columnCount(const QModelIndex &parent) const override;
 
-    void populateModel();
+    void populateModel(QString name);
+
+    bool isRootItem(TreeItem *item);
+
+    QModelIndex getFirst() const;
+
+    TreeItem *getRoot() const;
+
+    QModelIndex createIndex(int arow, int acolumn, TreeItem *aid) const;
 
 private:
     TreeItem *m_rootItem;

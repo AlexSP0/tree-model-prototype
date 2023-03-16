@@ -1,12 +1,32 @@
 #ifndef TREEITEM_H
 #define TREEITEM_H
 
+#include "treemodel.h"
+
 #include <memory>
 #include <QVariant>
 #include <QVector>
 
+struct ConnectionPoint
+{
+    QModelIndex connectionIndex;
+};
+
 class TreeItem
 {
+public:
+    enum ItemType
+    {
+        simple,
+        connectionTo,
+        connectionFrom
+    };
+
+public:
+    ItemType type;
+
+    ConnectionPoint connection;
+
 public:
     explicit TreeItem(TreeItem *parent = nullptr);
     ~TreeItem();
@@ -33,7 +53,9 @@ public:
 
 protected:
     QVector<QVector<TreeItem *>> m_childsItems;
+
     QMap<int, QVariant> m_itemData;
+
     TreeItem *m_parent;
 };
 

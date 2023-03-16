@@ -2,9 +2,7 @@
 
 TreeModel::TreeModel()
     : m_rootItem(new TreeItem(nullptr))
-{
-    populateModel();
-}
+{}
 
 TreeModel::~TreeModel()
 {
@@ -32,6 +30,9 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
 
 QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) const
 {
+    int rrr = parent.row();
+    int ccc = parent.column();
+
     if (!hasIndex(row, column, parent))
     {
         return QModelIndex();
@@ -84,7 +85,10 @@ int TreeModel::rowCount(const QModelIndex &parent) const
     }
 
     item = static_cast<TreeItem *>(parent.internalPointer());
-    return item->childRowsCount();
+
+    auto i = item->childRowsCount();
+
+    return i;
 }
 
 int TreeModel::columnCount(const QModelIndex &parent) const
@@ -96,21 +100,61 @@ int TreeModel::columnCount(const QModelIndex &parent) const
     }
 
     item = static_cast<TreeItem *>(parent.internalPointer());
-    return item->columnsCountInRow(parent.row());
+
+    auto i = item->columnsCountInRow(parent.row());
+    return i;
 }
 
-void TreeModel::populateModel()
+void TreeModel::populateModel(QString name)
 {
     TreeItem *item1 = new TreeItem();
-    item1->setData(QVariant("item1"), Qt::DisplayRole);
+    QString itemName1;
+    itemName1.append(name).append("1");
+    item1->setData(QVariant(itemName1), Qt::DisplayRole);
+
+    QString itemName2;
+    itemName2.append(name).append("2");
     TreeItem *item2 = new TreeItem();
-    item2->setData(QVariant("item2"), Qt::DisplayRole);
+    item2->setData(QVariant(itemName2), Qt::DisplayRole);
+
+    QString itemName3;
+    itemName3.append(name).append("3");
     TreeItem *item3 = new TreeItem();
-    item3->setData(QVariant("item3"), Qt::DisplayRole);
+    item3->setData(QVariant(itemName3), Qt::DisplayRole);
+
+    QString itemName4;
+    itemName4.append(name).append("4");
     TreeItem *item4 = new TreeItem();
-    item4->setData(QVariant("item4"), Qt::DisplayRole);
+    item4->setData(QVariant(itemName4), Qt::DisplayRole);
+
+    QString itemName5;
+    itemName5.append(name).append("5");
+    TreeItem *item5 = new TreeItem();
+    item5->setData(QVariant(itemName5), Qt::DisplayRole);
+
     m_rootItem->appendChildToNextRow(item1);
     m_rootItem->appendChildToNextRow(item2);
-    m_rootItem->appendItemExitingRow(item3, 0);
-    m_rootItem->appendItemExitingRow(item4, 1);
+    item1->appendChildToNextRow(item3);
+    item1->appendItemExitingRow(item4, 0);
+    item1->appendItemExitingRow(item5, 0);
+}
+
+bool TreeModel::isRootItem(TreeItem *item)
+{
+    return m_rootItem == item;
+}
+
+QModelIndex TreeModel::getFirst() const
+{
+    return createIndex(0, 0, m_rootItem->child(0, 0));
+}
+
+TreeItem *TreeModel::getRoot() const
+{
+    return m_rootItem;
+}
+
+QModelIndex TreeModel::createIndex(int arow, int acolumn, TreeItem *aid) const
+{
+    return QAbstractItemModel::createIndex(arow, acolumn, aid);
 }
