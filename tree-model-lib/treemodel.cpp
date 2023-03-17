@@ -139,11 +139,6 @@ void TreeModel::populateModel(QString name)
     item1->appendItemExitingRow(item5, 0);
 }
 
-bool TreeModel::isRootItem(TreeItem *item)
-{
-    return m_rootItem == item;
-}
-
 QModelIndex TreeModel::getFirst() const
 {
     return createIndex(0, 0, m_rootItem->child(0, 0));

@@ -28,14 +28,9 @@ QModelIndex MergeProxyModel::index(int row, int column, const QModelIndex &paren
     TreeModel *currentTreeModel      = dynamic_cast<TreeModel *>(
         const_cast<QAbstractItemModel *>(parent.model()));
 
-    if (!currentModel->hasIndex(row, column, parent))
-    {
-        return QModelIndex();
-    }
-
     TreeItem *parentItem;
 
-    if (parent.isValid())
+    if (!parent.isValid())
     {
         parentItem = currentTreeModel->getRoot();
     }
@@ -47,6 +42,11 @@ QModelIndex MergeProxyModel::index(int row, int column, const QModelIndex &paren
     if (parentItem->type == TreeItem::ItemType::simple
         || parentItem->type == TreeItem::ItemType::connectionFrom)
     {
+        if (!currentModel->hasIndex(row, column, parent))
+        {
+            return QModelIndex();
+        }
+
         TreeItem *childItem = parentItem->child(row, column);
 
         if (childItem)
@@ -60,15 +60,10 @@ QModelIndex MergeProxyModel::index(int row, int column, const QModelIndex &paren
         TreeItem *toItem = static_cast<TreeItem *>(
             parentItem->connection.connectionIndex.internalPointer());
 
-        TreeItem *childItem = toItem->child(row, column);
+        TreeModel *toModel = static_cast<TreeModel *>(
+            const_cast<QAbstractItemModel *>(parentItem->connection.connectionIndex.model()));
 
-        if (childItem)
-        {
-            TreeModel *toModel = static_cast<TreeModel *>(
-                const_cast<QAbstractItemModel *>(parentItem->connection.connectionIndex.model()));
-            return toModel->createIndex(row, column, childItem);
-        }
-        return QModelIndex();
+        return toModel->createIndex(row, column, toItem);
     }
 }
 
@@ -127,7 +122,6 @@ int MergeProxyModel::rowCount(const QModelIndex &parent) const
 
 int MergeProxyModel::columnCount(const QModelIndex &parent) const
 {
-    //QAbstractItemModel *currentModel = const_cast<QAbstractItemModel *>(parent.model());
     TreeModel *currentTreeModel = dynamic_cast<TreeModel *>(
         const_cast<QAbstractItemModel *>(parent.model()));
 
@@ -145,14 +139,14 @@ int MergeProxyModel::columnCount(const QModelIndex &parent) const
     return i;
 }
 
-QModelIndex MergeProxyModel::mapFromSource(const QModelIndex &sourceIndex) const
+bool MergeProxyModel::hasChildren(const QModelIndex &parent) const
 {
-    return QModelIndex();
+    //TO DO immplement
 }
 
-QModelIndex MergeProxyModel::mapToSource(const QModelIndex &proxyIndex) const
+QModelIndex MergeProxyModel::createIndex(int row, int column, quintptr id) const
 {
-    return QModelIndex();
+    //TO DO immplement
 }
 
 void MergeProxyModel::attachModel(QModelIndex from, QModelIndex to)

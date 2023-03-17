@@ -29,8 +29,6 @@ public:
 
     void populateModel(QString name);
 
-    bool isRootItem(TreeItem *item);
-
     QModelIndex getFirst() const;
 
     TreeItem *getRoot() const;

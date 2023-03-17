@@ -24,8 +24,9 @@ public:
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &parent) const override;
 
-    QModelIndex mapFromSource(const QModelIndex &sourceIndex) const;
-    QModelIndex mapToSource(const QModelIndex &proxyIndex) const;
+    bool hasChildren(const QModelIndex &parent) const override; //TO DO
+
+    QModelIndex createIndex(int row, int column, quintptr id) const override; //TO DO
 
     void attachModel(QModelIndex from, QModelIndex to);
 
@@ -33,8 +34,6 @@ public:
 
 private:
     TreeModel *m_rootModel;
-
-    QList<TreeModel *> m_sourcesModels;
 };
 
 #endif
