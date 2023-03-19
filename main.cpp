@@ -11,50 +11,50 @@
 
 int main(int argc, char *argv[])
 {
-    TreeModel model;
+    TreeModel model("first");
     model.populateModel("first");
 
-    TreeModel model2;
+    TreeModel model2("second");
     model2.populateModel("second");
 
-    QModelIndex item1       = model.getFirst();
-    QModelIndex model2Item1 = model2.getFirst();
+    QModelIndex item1       = model.index(0, 0, QModelIndex());
+    QModelIndex model2Item1 = model2.index(0, 0, QModelIndex());
 
     QString str = item1.data(Qt::DisplayRole).toString();
 
     auto item3 = model.index(0, 0, item1);
 
-    QString item3Str = item3.data(Qt::DisplayRole).toString();
+    QString item3Str = model2Item1.data(Qt::DisplayRole).toString();
 
     //Attach model to model
 
     MergeProxyModel proxyModel(&model);
 
-    proxyModel.attachModel(item3, model2Item1);
+    proxyModel.attachModel(item1, model2Item1);
 
-    //Get first child index and its data
+    //    //Get first child index and its data
 
-    auto proxyFirstItem = proxyModel.getFirst();
+    //    auto proxyFirstItem = proxyModel.getFirst();
 
-    QString proxyModelFirstStr = proxyFirstItem.data(Qt::DisplayRole).toString();
+    //    QString proxyModelFirstStr = proxyFirstItem.data(Qt::DisplayRole).toString();
 
-    //Get "from" index and its data
+    //    //Get "from" index and its data
 
-    auto proxyItem3 = proxyModel.index(0, 0, proxyFirstItem);
+    //    auto proxyItem3 = proxyModel.index(0, 0, proxyFirstItem);
 
-    QString proxyModelItem3Str = proxyItem3.data(Qt::DisplayRole).toString();
+    //    QString proxyModelItem3Str = proxyItem3.data(Qt::DisplayRole).toString();
 
-    //Get attached index and its data
+    //    //Get attached index and its data
 
-    auto connectedChilds = proxyModel.index(0, 0, proxyItem3);
+    //    auto connectedChilds = proxyModel.index(0, 0, proxyItem3);
 
-    QString connectedChildsStr = connectedChilds.data(Qt::DisplayRole).toString();
+    //    QString connectedChildsStr = connectedChilds.data(Qt::DisplayRole).toString();
 
-    //Gets attached parent index and data
+    //    //Gets attached parent index and data
 
-    auto connectedParent = proxyModel.parent(connectedChilds);
+    //    auto connectedParent = proxyModel.parent(connectedChilds);
 
-    QString connectedParentStr = connectedParent.data(Qt::DisplayRole).toString();
+    //    QString connectedParentStr = connectedParent.data(Qt::DisplayRole).toString();
 
     QApplication app(argc, argv);
 

@@ -30,12 +30,17 @@ QModelIndex MergeProxyModel::index(int row, int column, const QModelIndex &paren
 
     TreeItem *parentItem;
 
+    if (!hasIndex(row, column, parent))
+    {
+        return QModelIndex();
+    }
+
     if (!parent.isValid())
     {
         //parentItem = currentTreeModel->getRoot();
         parentItem = m_rootModel->getRoot();
 
-        TreeItem *childItem = parentItem->child(row, column);
+        TreeItem *childItem = parentItem->child(row);
 
         if (childItem)
         {
@@ -48,15 +53,15 @@ QModelIndex MergeProxyModel::index(int row, int column, const QModelIndex &paren
         parentItem = static_cast<TreeItem *>(parent.internalPointer());
     }
 
-    if (parentItem->type == TreeItem::ItemType::simple
-        || parentItem->type == TreeItem::ItemType::connectionFrom)
+    if (parentItem->type == TreeItem::Type::simple
+        || parentItem->type == TreeItem::Type::connectionUp)
     {
         if (!currentModel->hasIndex(row, column, parent))
         {
             return QModelIndex();
         }
 
-        TreeItem *childItem = parentItem->child(row, column);
+        TreeItem *childItem = parentItem->child(row);
 
         if (childItem)
         {
@@ -64,7 +69,7 @@ QModelIndex MergeProxyModel::index(int row, int column, const QModelIndex &paren
         }
         return QModelIndex();
     }
-    else //TreeItem::ItemType::connectionFrom
+    else //TreeItem::ItemType::connectionDown
     {
         TreeItem *toItem = static_cast<TreeItem *>(
             parentItem->connection.connectionIndex.internalPointer());
@@ -72,8 +77,16 @@ QModelIndex MergeProxyModel::index(int row, int column, const QModelIndex &paren
         TreeModel *toModel = static_cast<TreeModel *>(
             const_cast<QAbstractItemModel *>(parentItem->connection.connectionIndex.model()));
 
-        return toModel->createIndex(row, column, toItem);
+        TreeItem *parentItemDownModel = toItem->parentItem();
+
+        TreeItem *toItemDownModel = parentItemDownModel->child(row);
+
+        auto itemIndex = toModel->createIndex(row, column, toItemDownModel);
+
+        return itemIndex;
     }
+
+    return QModelIndex();
 }
 
 QModelIndex MergeProxyModel::parent(const QModelIndex &child) const
@@ -84,26 +97,35 @@ QModelIndex MergeProxyModel::parent(const QModelIndex &child) const
 
     if (!child.isValid())
     {
-        //TO DO!
         return QModelIndex();
     }
 
-    TreeItem *childItem  = static_cast<TreeItem *>(child.internalPointer());
-    TreeItem *parentItem = childItem->parent();
+    TreeItem *childItem = static_cast<TreeItem *>(child.internalPointer());
 
-    if (childItem->type == TreeItem::ItemType::simple
-        || childItem->type == TreeItem::ItemType::connectionTo)
+    TreeItem *parentItem;
+
+    if (childItem->type == TreeItem::Type::simple
+        || childItem->type == TreeItem::Type::connectionDown)
     {
-        if (parentItem == currentTreeModel->getRoot())
+        parentItem = childItem->parentItem();
+
+        if (parentItem == currentTreeModel->getRoot() || parentItem == nullptr)
         {
             return QModelIndex();
         }
 
-        return currentTreeModel->createIndex(parentItem->row(), parentItem->column(), parentItem);
+        return currentTreeModel->createIndex(parentItem->row(), 0, parentItem);
     }
-    else //TreeItem::ItemType::connectionFrom
+    else
     {
-        return childItem->connection.connectionIndex;
+        QModelIndex toItemIndex = childItem->connection.connectionIndex;
+
+        TreeModel *toItemModel = static_cast<TreeModel *>(
+            const_cast<QAbstractItemModel *>(toItemIndex.model()));
+
+        TreeItem *toItem = static_cast<TreeItem *>(toItemIndex.internalPointer());
+
+        return toItemModel->createIndex(toItemIndex.row(), toItemIndex.column(), toItem);
     }
 
     return QModelIndex();
@@ -111,57 +133,87 @@ QModelIndex MergeProxyModel::parent(const QModelIndex &child) const
 
 int MergeProxyModel::rowCount(const QModelIndex &parent) const
 {
-    //QAbstractItemModel *currentModel = const_cast<QAbstractItemModel *>(parent.model());
-    TreeModel *currentTreeModel = dynamic_cast<TreeModel *>(
+    QAbstractItemModel *currentModel = const_cast<QAbstractItemModel *>(parent.model());
+    TreeModel *currentTreeModel      = static_cast<TreeModel *>(
         const_cast<QAbstractItemModel *>(parent.model()));
 
-    TreeItem *item;
-
-    if (!parent.isValid() && parent.model() == nullptr)
-    {
-        return m_rootModel->getRoot()->childRowsCount();
-    }
+    TreeItem *parentItem;
+    if (parent.column() > 0)
+        return 0;
 
     if (!parent.isValid())
     {
-        return (currentTreeModel->getRoot())->childRowsCount();
+        parentItem = m_rootModel->getRoot();
+    }
+    else
+    {
+        parentItem = static_cast<TreeItem *>(parent.internalPointer());
     }
 
-    item = static_cast<TreeItem *>(parent.internalPointer());
+    if (parentItem->type == TreeItem::Type::connectionDown)
+    {
+        QModelIndex toItemIndex = parentItem->connection.connectionIndex;
+        TreeItem *toItem        = static_cast<TreeItem *>(toItemIndex.internalPointer());
 
-    auto i = item->childRowsCount();
+        auto outerParent = toItem->parentItem();
 
-    return i;
+        auto g = outerParent->childCount();
+
+        return g;
+    }
+    else
+    {
+        auto i = parentItem->childCount();
+
+        return i;
+    }
 }
 
 int MergeProxyModel::columnCount(const QModelIndex &parent) const
 {
-    TreeModel *currentTreeModel = static_cast<TreeModel *>(
+    QAbstractItemModel *currentModel = const_cast<QAbstractItemModel *>(parent.model());
+    TreeModel *currentTreeModel      = static_cast<TreeModel *>(
         const_cast<QAbstractItemModel *>(parent.model()));
 
-    TreeItem *item;
-
-    if (!parent.isValid() && parent.model() == nullptr)
+    if (parent.isValid())
     {
-        return m_rootModel->getRoot()->childRowsCount();
+        TreeItem *item = static_cast<TreeItem *>(parent.internalPointer());
+
+        if (item->type == TreeItem::Type::connectionDown)
+        {
+            QModelIndex toItemIndex = item->connection.connectionIndex;
+            TreeItem *toItem        = static_cast<TreeItem *>(toItemIndex.internalPointer());
+
+            auto outerParent = toItem->parentItem();
+
+            auto g = outerParent->columnCount();
+
+            return g;
+        }
+        else
+        {
+            auto i = item->columnCount();
+
+            return i;
+        }
     }
 
-    if (!parent.isValid())
-    {
-        return currentTreeModel->getRoot()->childRowsCount();
-    }
-
-    item = static_cast<TreeItem *>(parent.internalPointer());
-
-    auto i = item->childRowsCount();
+    auto i = m_rootModel->getRoot()->columnCount();
 
     return i;
 }
 
-//bool MergeProxyModel::hasChildren(const QModelIndex &parent) const
-//{
-//    //TO DO immplement
-//}
+bool MergeProxyModel::hasChildren(const QModelIndex &parent) const
+{
+    TreeModel *toItemModel = static_cast<TreeModel *>(
+        const_cast<QAbstractItemModel *>(parent.model()));
+
+    TreeItem *toItem = static_cast<TreeItem *>(parent.internalPointer());
+
+    bool flag = QAbstractItemModel::hasChildren(parent);
+
+    return flag;
+}
 
 //QModelIndex MergeProxyModel::createIndex(int row, int column, quintptr id) const
 //{
@@ -173,8 +225,8 @@ void MergeProxyModel::attachModel(QModelIndex from, QModelIndex to)
     TreeItem *fromItem = static_cast<TreeItem *>(from.internalPointer());
     TreeItem *toItem   = static_cast<TreeItem *>(to.internalPointer());
 
-    fromItem->type = TreeItem::ItemType::connectionTo;
-    toItem->type   = TreeItem::ItemType::connectionFrom;
+    fromItem->type = TreeItem::Type::connectionDown;
+    toItem->type   = TreeItem::Type::connectionUp;
 
     fromItem->connection.connectionIndex = to;
     toItem->connection.connectionIndex   = from;

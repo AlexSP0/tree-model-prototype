@@ -1,23 +1,42 @@
 #include "treemodel.h"
 
-TreeModel::TreeModel()
-    : m_rootItem(new TreeItem(nullptr))
-{}
+#include <QStringList>
+
+TreeModel::TreeModel(const QString &data, QObject *parent)
+    : QAbstractItemModel(parent)
+{
+    m_rootItem = new TreeItem({tr("Title"), tr("Summary")});
+    setupModelData(data.split('\n'), m_rootItem);
+}
 
 TreeModel::~TreeModel()
 {
     delete m_rootItem;
 }
 
+int TreeModel::columnCount(const QModelIndex &parent) const
+{
+    if (parent.isValid())
+    {
+        auto i = static_cast<TreeItem *>(parent.internalPointer())->columnCount();
+        return i;
+    }
+
+    auto g = m_rootItem->columnCount();
+    return g;
+}
+
 QVariant TreeModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
-    {
         return QVariant();
-    }
+
+    if (role != Qt::DisplayRole)
+        return QVariant();
 
     TreeItem *item = static_cast<TreeItem *>(index.internalPointer());
-    return item->data(role);
+
+    return item->data(index.column());
 }
 
 Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
@@ -28,120 +47,78 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
     return QAbstractItemModel::flags(index);
 }
 
+QVariant TreeModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+        return m_rootItem->data(section);
+
+    return QVariant();
+}
+
 QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) const
 {
-    int rrr = parent.row();
-    int ccc = parent.column();
-
     if (!hasIndex(row, column, parent))
-    {
         return QModelIndex();
-    }
 
     TreeItem *parentItem;
 
     if (!parent.isValid())
-    {
         parentItem = m_rootItem;
-    }
     else
-    {
         parentItem = static_cast<TreeItem *>(parent.internalPointer());
-    }
 
-    TreeItem *childItem = parentItem->child(row, column);
-
+    TreeItem *childItem = parentItem->child(row);
     if (childItem)
-    {
         return createIndex(row, column, childItem);
-    }
     return QModelIndex();
 }
 
 QModelIndex TreeModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
-    {
         return QModelIndex();
-    }
 
-    TreeItem *child  = static_cast<TreeItem *>(index.internalPointer());
-    TreeItem *parent = child->parent();
+    TreeItem *childItem  = static_cast<TreeItem *>(index.internalPointer());
+    TreeItem *parentItem = childItem->parentItem();
 
-    if (parent == m_rootItem)
-    {
+    if (parentItem == m_rootItem)
         return QModelIndex();
-    }
 
-    return createIndex(parent->row(), parent->column(), parent);
+    return createIndex(parentItem->row(), 0, parentItem);
 }
 
 int TreeModel::rowCount(const QModelIndex &parent) const
 {
-    TreeItem *item;
+    TreeItem *parentItem;
+    if (parent.column() > 0)
+        return 0;
+
     if (!parent.isValid())
-    {
-        return m_rootItem->childRowsCount();
-    }
+        parentItem = m_rootItem;
+    else
+        parentItem = static_cast<TreeItem *>(parent.internalPointer());
 
-    item = static_cast<TreeItem *>(parent.internalPointer());
-
-    auto i = item->childRowsCount();
+    auto i = parentItem->childCount();
 
     return i;
 }
 
-int TreeModel::columnCount(const QModelIndex &parent) const
-{
-    TreeItem *item;
-    if (!parent.isValid())
-    {
-        return m_rootItem->columnsCountInRow(0);
-    }
-
-    item = static_cast<TreeItem *>(parent.internalPointer());
-
-    auto i = item->columnsCountInRow(parent.row());
-    return i;
-}
+void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent) {}
 
 void TreeModel::populateModel(QString name)
 {
-    TreeItem *item1 = new TreeItem();
-    QString itemName1;
-    itemName1.append(name).append("1");
-    item1->setData(QVariant(itemName1), Qt::DisplayRole);
+    m_rootItem->appendChild(new TreeItem({QVariant(name + "1")}, m_rootItem));
+    m_rootItem->appendChild(new TreeItem({QVariant(name + "2")}, m_rootItem));
+    m_rootItem->appendChild(new TreeItem({QVariant(name + "3")}, m_rootItem));
 
-    QString itemName2;
-    itemName2.append(name).append("2");
-    TreeItem *item2 = new TreeItem();
-    item2->setData(QVariant(itemName2), Qt::DisplayRole);
-
-    QString itemName3;
-    itemName3.append(name).append("3");
-    TreeItem *item3 = new TreeItem();
-    item3->setData(QVariant(itemName3), Qt::DisplayRole);
-
-    QString itemName4;
-    itemName4.append(name).append("4");
-    TreeItem *item4 = new TreeItem();
-    item4->setData(QVariant(itemName4), Qt::DisplayRole);
-
-    QString itemName5;
-    itemName5.append(name).append("5");
-    TreeItem *item5 = new TreeItem();
-    item5->setData(QVariant(itemName5), Qt::DisplayRole);
-
-    m_rootItem->appendChildToNextRow(item1);
-    m_rootItem->appendChildToNextRow(item2);
-    item1->appendChildToNextRow(item3);
-    item1->appendItemExitingRow(item4, 0);
-    item1->appendItemExitingRow(item5, 0);
+    TreeItem *item2 = m_rootItem->child(1);
+    item2->appendChild(new TreeItem({QVariant("2" + name + "1")}, item2));
+    item2->appendChild(new TreeItem({QVariant("2" + name + "2")}, item2));
 }
 
 QModelIndex TreeModel::getFirst() const
 {
-    return createIndex(0, 0, m_rootItem->child(0, 0));
+    return QModelIndex();
 }
 
 TreeItem *TreeModel::getRoot() const

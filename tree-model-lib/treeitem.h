@@ -4,8 +4,8 @@
 #include "treemodel.h"
 
 #include <memory>
+#include <QModelIndex>
 #include <QVariant>
-#include <QVector>
 
 struct ConnectionPoint
 {
@@ -15,48 +15,34 @@ struct ConnectionPoint
 class TreeItem
 {
 public:
-    enum ItemType
+    enum Type
     {
         simple,
-        connectionTo,
-        connectionFrom
+        connectionDown,
+        connectionUp
     };
 
 public:
-    ItemType type;
+    explicit TreeItem(const QList<QVariant> &data, TreeItem *parentItem = nullptr);
+    ~TreeItem();
+
+    void appendChild(TreeItem *child);
+
+    TreeItem *child(int row);
+    int childCount() const;
+    int columnCount() const;
+    QVariant data(int column) const;
+    int row() const;
+    TreeItem *parentItem();
+
+    Type type;
 
     ConnectionPoint connection;
 
-public:
-    explicit TreeItem(TreeItem *parent = nullptr);
-    ~TreeItem();
-
-    bool appendChildToNextRow(TreeItem *item);
-
-    bool appendItemExitingRow(TreeItem *item, int row);
-
-    TreeItem *child(int row, int column);
-
-    int childRowsCount() const;
-
-    int columnsCountInRow(int row) const;
-
-    QVariant data(int role) const;
-
-    void setData(QVariant data, int role);
-
-    int row() const;
-
-    int column() const;
-
-    TreeItem *parent() const;
-
-protected:
-    QVector<QVector<TreeItem *>> m_childsItems;
-
-    QMap<int, QVariant> m_itemData;
-
-    TreeItem *m_parent;
+private:
+    QList<TreeItem *> m_childItems;
+    QList<QVariant> m_itemData;
+    TreeItem *m_parentItem;
 };
 
 #endif
