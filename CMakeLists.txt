@@ -14,12 +14,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(tree-model-lib)
 add_subdirectory(mergeproxymodel)
 
-find_package(Qt5 REQUIRED COMPONENTS Core)
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui)
 
 add_executable(tree-model-prototype
   main.cpp
 )
-target_link_libraries(tree-model-prototype PRIVATE Qt5::Core)
+target_link_libraries(tree-model-prototype PRIVATE Qt5::Core Qt5::Widgets Qt5::Gui)
 target_link_libraries(tree-model-prototype PRIVATE tree-model-lib)
 target_link_libraries(tree-model-prototype PRIVATE mergeproxymodel-lib)
 install(TARGETS tree-model-prototype

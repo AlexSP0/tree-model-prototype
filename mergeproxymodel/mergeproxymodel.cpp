@@ -25,14 +25,23 @@ Qt::ItemFlags MergeProxyModel::flags(const QModelIndex &index) const
 QModelIndex MergeProxyModel::index(int row, int column, const QModelIndex &parent) const
 {
     QAbstractItemModel *currentModel = const_cast<QAbstractItemModel *>(parent.model());
-    TreeModel *currentTreeModel      = dynamic_cast<TreeModel *>(
+    TreeModel *currentTreeModel      = static_cast<TreeModel *>(
         const_cast<QAbstractItemModel *>(parent.model()));
 
     TreeItem *parentItem;
 
     if (!parent.isValid())
     {
-        parentItem = currentTreeModel->getRoot();
+        //parentItem = currentTreeModel->getRoot();
+        parentItem = m_rootModel->getRoot();
+
+        TreeItem *childItem = parentItem->child(row, column);
+
+        if (childItem)
+        {
+            return createIndex(row, column, childItem);
+        }
+        return QModelIndex();
     }
     else
     {
@@ -70,7 +79,7 @@ QModelIndex MergeProxyModel::index(int row, int column, const QModelIndex &paren
 QModelIndex MergeProxyModel::parent(const QModelIndex &child) const
 {
     QAbstractItemModel *currentModel = const_cast<QAbstractItemModel *>(child.model());
-    TreeModel *currentTreeModel      = dynamic_cast<TreeModel *>(
+    TreeModel *currentTreeModel      = static_cast<TreeModel *>(
         const_cast<QAbstractItemModel *>(child.model()));
 
     if (!child.isValid())
@@ -108,6 +117,11 @@ int MergeProxyModel::rowCount(const QModelIndex &parent) const
 
     TreeItem *item;
 
+    if (!parent.isValid() && parent.model() == nullptr)
+    {
+        return m_rootModel->getRoot()->childRowsCount();
+    }
+
     if (!parent.isValid())
     {
         return (currentTreeModel->getRoot())->childRowsCount();
@@ -122,10 +136,15 @@ int MergeProxyModel::rowCount(const QModelIndex &parent) const
 
 int MergeProxyModel::columnCount(const QModelIndex &parent) const
 {
-    TreeModel *currentTreeModel = dynamic_cast<TreeModel *>(
+    TreeModel *currentTreeModel = static_cast<TreeModel *>(
         const_cast<QAbstractItemModel *>(parent.model()));
 
     TreeItem *item;
+
+    if (!parent.isValid() && parent.model() == nullptr)
+    {
+        return m_rootModel->getRoot()->childRowsCount();
+    }
 
     if (!parent.isValid())
     {
@@ -139,15 +158,15 @@ int MergeProxyModel::columnCount(const QModelIndex &parent) const
     return i;
 }
 
-bool MergeProxyModel::hasChildren(const QModelIndex &parent) const
-{
-    //TO DO immplement
-}
+//bool MergeProxyModel::hasChildren(const QModelIndex &parent) const
+//{
+//    //TO DO immplement
+//}
 
-QModelIndex MergeProxyModel::createIndex(int row, int column, quintptr id) const
-{
-    //TO DO immplement
-}
+//QModelIndex MergeProxyModel::createIndex(int row, int column, quintptr id) const
+//{
+//    //TO DO immplement
+//}
 
 void MergeProxyModel::attachModel(QModelIndex from, QModelIndex to)
 {

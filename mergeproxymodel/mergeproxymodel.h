@@ -24,9 +24,9 @@ public:
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &parent) const override;
 
-    bool hasChildren(const QModelIndex &parent) const override; //TO DO
+    //bool hasChildren(const QModelIndex &parent) const override; //TO DO
 
-    QModelIndex createIndex(int row, int column, quintptr id) const override; //TO DO
+    //QModelIndex createIndex(int row, int column, quintptr id) const override; //TO DO
 
     void attachModel(QModelIndex from, QModelIndex to);
 

@@ -83,6 +83,11 @@ int TreeItem::row() const
     int row    = 0;
     int column = -1;
 
+    if (!m_parent)
+    {
+        return 0;
+    }
+
     for (auto &currentRow : m_parent->m_childsItems)
     {
         column = currentRow.indexOf(const_cast<TreeItem *>(this));
@@ -99,6 +104,11 @@ int TreeItem::column() const
 {
     int row    = 0;
     int column = -1;
+
+    if (!m_parent)
+    {
+        return 0;
+    }
 
     for (auto &currentRow : m_parent->m_childsItems)
     {

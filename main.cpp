@@ -2,6 +2,13 @@
 
 #include "mergeproxymodel/mergeproxymodel.h"
 
+#include <QApplication>
+#include <QMainWindow>
+#include <QStandardItemModel>
+#include <QTreeView>
+#include <QVBoxLayout>
+#include <QWindow>
+
 int main(int argc, char *argv[])
 {
     TreeModel model;
@@ -49,5 +56,38 @@ int main(int argc, char *argv[])
 
     QString connectedParentStr = connectedParent.data(Qt::DisplayRole).toString();
 
-    return 0;
+    QApplication app(argc, argv);
+
+    QMainWindow mainWindow;
+    QVBoxLayout layout;
+
+    QTreeView firstModelView;
+    QTreeView secondModelView;
+
+    QTreeView combinedModelView;
+
+    firstModelView.setModel(&model);
+    secondModelView.setModel(&model2);
+
+    combinedModelView.setModel(&proxyModel);
+
+    QStandardItemModel modelStd;
+
+    QStandardItem *item = new QStandardItem("Test");
+    modelStd.appendRow(item);
+
+    //combinedModelView.setModel(&modelStd);
+
+    layout.addWidget(&firstModelView, 1);
+    layout.addWidget(&secondModelView, 1);
+    layout.addWidget(&combinedModelView, 1);
+
+    QWidget centralWidget;
+    centralWidget.setLayout(&layout);
+
+    mainWindow.setCentralWidget(&centralWidget);
+
+    mainWindow.show();
+
+    return app.exec();
 }

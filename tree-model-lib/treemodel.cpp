@@ -96,7 +96,7 @@ int TreeModel::columnCount(const QModelIndex &parent) const
     TreeItem *item;
     if (!parent.isValid())
     {
-        return m_rootItem->columnsCountInRow(parent.row());
+        return m_rootItem->columnsCountInRow(0);
     }
 
     item = static_cast<TreeItem *>(parent.internalPointer());
