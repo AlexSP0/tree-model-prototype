@@ -250,6 +250,17 @@ void MergeProxyModel::attachModel(QModelIndex from, QModelIndex to)
 
     fromItem->connection.connectionIndex = to;
     toItem->connection.connectionIndex   = from;
+
+    TreeItem *toItemParent = toItem->parentItem();
+    int toNumberChildren   = toItemParent->childCount();
+
+    //attach all children
+    for (int i = 0; i < toNumberChildren; ++i)
+    {
+        TreeItem *child                   = toItemParent->child(i);
+        child->connection.connectionIndex = from;
+        child->type                       = TreeItem::Type::connectionUp;
+    }
 }
 
 QModelIndex MergeProxyModel::getFirst()
