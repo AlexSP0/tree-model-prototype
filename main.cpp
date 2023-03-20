@@ -3,6 +3,7 @@
 #include "mergeproxymodel/mergeproxymodel.h"
 
 #include <QApplication>
+#include <QDebug>
 #include <QMainWindow>
 #include <QStandardItemModel>
 #include <QTreeView>
@@ -66,9 +67,10 @@ int main(int argc, char *argv[])
 
     QTreeView combinedModelView;
 
-    firstModelView.setModel(&model);
-    secondModelView.setModel(&model2);
+    //firstModelView.setModel(&model);
+    //secondModelView.setModel(&model2);
 
+    qWarning() << "PROXY MODEL_________________________________";
     combinedModelView.setModel(&proxyModel);
 
     QStandardItemModel modelStd;

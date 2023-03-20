@@ -1,5 +1,7 @@
 #include <mergeproxymodel.h>
 
+#include <QDebug>
+
 MergeProxyModel::MergeProxyModel(TreeModel *rootModel)
     : m_rootModel(rootModel)
 {}
@@ -14,6 +16,11 @@ QVariant MergeProxyModel::data(const QModelIndex &index, int role) const
     }
 
     TreeItem *item = static_cast<TreeItem *>(index.internalPointer());
+
+    qWarning() << "PROXY model DATA: index"
+               << "row:" << index.row() << "column" << index.column() << "role " << role
+               << " item: " << item->data(Qt::DisplayRole);
+
     return item->data(role);
 }
 
@@ -29,6 +36,9 @@ QModelIndex MergeProxyModel::index(int row, int column, const QModelIndex &paren
         const_cast<QAbstractItemModel *>(parent.model()));
 
     TreeItem *parentItem;
+
+    qWarning() << "PROXY model INDEX: "
+               << "row: " << row << " column:" << column << "model: " << parent.model();
 
     if (!hasIndex(row, column, parent))
     {
@@ -63,6 +73,8 @@ QModelIndex MergeProxyModel::index(int row, int column, const QModelIndex &paren
 
         TreeItem *childItem = parentItem->child(row);
 
+        qWarning() << "PROXY model INDEX: " << childItem->data(Qt::DisplayRole);
+
         if (childItem)
         {
             return currentTreeModel->createIndex(row, column, childItem);
@@ -80,6 +92,8 @@ QModelIndex MergeProxyModel::index(int row, int column, const QModelIndex &paren
         TreeItem *parentItemDownModel = toItem->parentItem();
 
         TreeItem *toItemDownModel = parentItemDownModel->child(row);
+
+        qWarning() << "PROXY model INDEX: " << toItemDownModel->data(Qt::DisplayRole);
 
         auto itemIndex = toModel->createIndex(row, column, toItemDownModel);
 
@@ -124,6 +138,12 @@ QModelIndex MergeProxyModel::parent(const QModelIndex &child) const
             const_cast<QAbstractItemModel *>(toItemIndex.model()));
 
         TreeItem *toItem = static_cast<TreeItem *>(toItemIndex.internalPointer());
+
+        qWarning() << "PROXY model PARENT: index"
+                   << "row:" << child.row() << "column" << child.column()
+                   << "model: " << child.model();
+        qWarning() << "PROXY model parent: " << toItem->data(Qt::DisplayRole)
+                   << "model: " << toItemIndex.model();
 
         return toItemModel->createIndex(toItemIndex.row(), toItemIndex.column(), toItem);
     }

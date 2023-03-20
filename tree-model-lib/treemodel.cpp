@@ -1,5 +1,6 @@
 #include "treemodel.h"
 
+#include <QDebug>
 #include <QStringList>
 
 TreeModel::TreeModel(const QString &data, QObject *parent)
@@ -36,6 +37,10 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
 
     TreeItem *item = static_cast<TreeItem *>(index.internalPointer());
 
+    qWarning() << "Tree model DATA: index"
+               << "row:" << index.row() << "column" << index.column() << "role " << role
+               << " item: " << item->data(Qt::DisplayRole);
+
     return item->data(index.column());
 }
 
@@ -62,14 +67,26 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) con
 
     TreeItem *parentItem;
 
+    qWarning() << "Tree model INDEX: "
+               << "row: " << row << " column:" << column << "model: " << parent.model();
+
     if (!parent.isValid())
+    {
         parentItem = m_rootItem;
+    }
     else
+    {
         parentItem = static_cast<TreeItem *>(parent.internalPointer());
+    }
 
     TreeItem *childItem = parentItem->child(row);
+
+    qWarning() << "Tree model INDEX: " << childItem->data(Qt::DisplayRole);
+
     if (childItem)
+    {
         return createIndex(row, column, childItem);
+    }
     return QModelIndex();
 }
 
@@ -80,6 +97,10 @@ QModelIndex TreeModel::parent(const QModelIndex &index) const
 
     TreeItem *childItem  = static_cast<TreeItem *>(index.internalPointer());
     TreeItem *parentItem = childItem->parentItem();
+
+    qWarning() << "Tree model PARENT: index"
+               << "row:" << index.row() << "column" << index.column() << "model: " << index.model()
+               << "Tree model PARENT: " << parentItem->data(Qt::DisplayRole);
 
     if (parentItem == m_rootItem)
         return QModelIndex();
